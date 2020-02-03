@@ -1,4 +1,4 @@
-package com.jd.streaming;
+package lilizhao.learn.streaming;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
