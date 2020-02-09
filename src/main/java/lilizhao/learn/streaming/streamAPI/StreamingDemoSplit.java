@@ -15,7 +15,7 @@ public class StreamingDemoSplit {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         //获取数据源
-        DataStreamSource<Long> text = env.addSource(new MyNoParalleSource()).setParallelism(1);//注意：针对此source，并行度只能设置为1
+        DataStreamSource<Long> text = env.addSource(new MyNoParalleSource()).setParallelism(4);//注意：针对此source，并行度只能设置为1
 
         SplitStream<Long> splitStream = text.split((OutputSelector<Long>) value -> {
             ArrayList<String> outPut = new ArrayList<>();
@@ -34,9 +34,12 @@ public class StreamingDemoSplit {
 
         DataStream<Long> moreStream = splitStream.select("odd","even");
 
+        moreStream.shuffle();
+        moreStream.rebalance();
+
         //打印结果
-        evenStream.print().setParallelism(1);
-//        moreStream.print().setParallelism(1);
+//        evenStream.print().setParallelism(1);
+        moreStream.print().setParallelism(1);
 
         String jobName = StreamingDemoSplit.class.getSimpleName();
         env.execute(jobName);
