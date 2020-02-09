@@ -5,15 +5,15 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import xuwei.tech.streaming.custormSource.MyNoParalleSource;
+import xuwei.tech.streaming.custormSource.MyRichParalleSource;
 
-public class StreamingDemoWithMyNoPralalleSource {
+public class StreamingDemoWithMyRichPralalleSource {
     public static void main(String[] args) throws Exception {
         //获取Flink的运行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
         //获取数据源
-        DataStreamSource<Long> text = env.addSource(new MyNoParalleSource()).setParallelism(1);//注意：针对此source，并行度只能设置为1
+        DataStreamSource<Long> text = env.addSource(new MyRichParalleSource()).setParallelism(2);
 
         DataStream<Long> num = text.map(new MapFunction<Long, Long>() {
             @Override
@@ -29,7 +29,7 @@ public class StreamingDemoWithMyNoPralalleSource {
         //打印结果
         sum.print().setParallelism(1);
 
-        String jobName = StreamingDemoWithMyNoPralalleSource.class.getSimpleName();
+        String jobName = StreamingDemoWithMyRichPralalleSource.class.getSimpleName();
         env.execute(jobName);
     }
 }
