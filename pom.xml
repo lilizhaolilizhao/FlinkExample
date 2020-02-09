@@ -18,6 +18,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-elasticsearch5_2.11</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
             <artifactId>flink-streaming-java_2.11</artifactId>
             <version>1.6.1</version>
             <!--<scope>provided</scope>-->
@@ -130,7 +135,7 @@
                     <archive>
                         <manifest>
                             <!-- 可以设置jar包的入口类(可选) -->
-                            <mainClass>xuwei.tech.streaming.SocketWindowWordCountJava</mainClass>
+                            <mainClass>lilizhao.learn.streaming.SocketWindowWordCountJava</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

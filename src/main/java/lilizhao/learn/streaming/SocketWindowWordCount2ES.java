@@ -1,17 +1,30 @@
 package lilizhao.learn.streaming;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSinkFunction;
+import org.apache.flink.streaming.connectors.elasticsearch.RequestIndexer;
+import org.apache.flink.streaming.connectors.elasticsearch5.ElasticsearchSink;
 import org.apache.flink.util.Collector;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.Requests;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * 滑动窗口测试
+ * 滑动窗口测试 & 写入ES
  */
-public class SocketWindowWordCountJava {
+public class SocketWindowWordCount2ES {
     public static void main(String[] args) throws Exception {
         //获取需要的端口号
         int port;
@@ -42,6 +55,32 @@ public class SocketWindowWordCountJava {
                 .sum("count");
 
         sum.print().setParallelism(1);
+
+        Map<String, String> config = new HashMap<>();
+        config.put("cluster.name", "elasticsearch");
+        // This instructs the sink to emit after every element, otherwise they would be buffered
+        config.put("bulk.flush.max.actions", "1");
+
+        List<InetSocketAddress> transportAddresses = new ArrayList<>();
+        transportAddresses.add(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 9300));
+
+        sum.addSink(new ElasticsearchSink<>(config, transportAddresses, new ElasticsearchSinkFunction<WordWithCount>() {
+            public IndexRequest createIndexRequest(WordWithCount wordWithCount) {
+                Map<String, Object> json = new HashMap<>();
+                json.put("word", wordWithCount.word);
+                json.put("count", wordWithCount.count);
+
+                return Requests.indexRequest()
+                        .index("llz-index")
+                        .type("llz-type")
+                        .source(json);
+            }
+
+            @Override
+            public void process(WordWithCount wordWithCount, RuntimeContext ctx, RequestIndexer indexer) {
+                indexer.add(createIndexRequest(wordWithCount));
+            }
+        }));
 
         env.execute("Socket window count");
     }
