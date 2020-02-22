@@ -21,7 +21,7 @@ public class StreamingDemoWithMyNoPralalleSource {
                 System.out.println("接收到数据：" + value);
                 return value;
             }
-        });
+        }).name("11111111");
 
         //每2秒钟处理一次数据
         DataStream<Long> sum = num.timeWindowAll(Time.seconds(2)).sum(0);
